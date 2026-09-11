@@ -1,0 +1,639 @@
+package miniStackly;
+
+
+import java.time.LocalDate;
+import java.time.LocalTime;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Scanner;
+import java.util.InputMismatchException;
+
+
+public class HospitalAppointmentSystem {                    // Main Class.
+
+   
+    static class Patient {       // this class is for patient
+
+        // Patient details
+        private int id;
+        private String name;
+        private int age;
+        private String phone;
+
+        
+        public Patient(int id, String name, int age, String phone) {      // constructor for patient details.
+            this.id = id;
+            this.name = name;
+            this.age = age;
+            this.phone = phone;
+        }
+
+        public int getId() {
+            return id;
+        }
+
+        public String getName() {
+            return name;
+        }
+
+        @Override                                    //   Displays patient information
+
+        public String toString() {
+            return "Patient ID: " + id +
+                   ", Name: " + name +
+                   ", Age: " + age +
+                   ", Phone: " + phone;
+        }
+    }
+
+
+   
+    static class Doctor {              //doctor class
+
+        private int id;
+        private String name;
+        private String specialization;
+
+        public Doctor(int id, String name, String specialization) {      //Constructor to initialize doctor details
+
+            this.id = id;
+            this.name = name;
+            this.specialization = specialization;
+        }
+
+        public int getId() {
+            return id;
+        }
+
+        public String getName() {
+            return name;
+        }
+
+        public String getSpecialization() {
+            return specialization;
+        }
+
+        @Override
+        public String toString() {
+            return "Doctor ID: " + id +
+                   ", Name: " + name +
+                   ", Specialization: " + specialization;
+        }
+    }
+
+
+  
+    static class Appointment {                          // this class is for appointment
+
+        private String appointmentId;
+        private int patientId;
+        private int doctorId;
+        private LocalDate date;
+        private LocalTime time;
+
+        private String status;                 // status of the apointment.
+
+        // Constructor to create an appointment
+        public Appointment(String appointmentId,
+                           int patientId,
+                           int doctorId,
+                           LocalDate date,
+                           LocalTime time) {
+
+            this.appointmentId = appointmentId;
+            this.patientId = patientId;
+            this.doctorId = doctorId;
+            this.date = date;
+            this.time = time;
+
+            this.status = "BOOKED";    //new appointment always as booked.
+        }
+
+        public String getAppointmentId() {
+            return appointmentId;
+        }
+
+        public int getPatientId() {
+            return patientId;
+        }
+
+        public int getDoctorId() {
+            return doctorId;
+        }
+
+        public LocalDate getDate() {
+            return date;
+        }
+
+        public LocalTime getTime() {
+            return time;
+        }
+
+        public String getStatus() {
+            return status;
+        }
+
+        public void cancel() {
+            status = "CANCELLED";
+        }
+
+        @Override
+        public String toString() {
+            return "Appointment ID: " + appointmentId +
+                   ", Patient ID: " + patientId +
+                   ", Doctor ID: " + doctorId +
+                   ", Date: " + date +
+                   ", Time: " + time +
+                   ", Status: " + status;
+        }
+    }
+
+
+  //// these are the custom exceptions.
+
+    // Exception when patient does not exist
+    static class PatientNotFoundException extends Exception {
+
+        public PatientNotFoundException(String message) {
+            super(message);
+        }
+    }
+
+
+    // Exception when doctor does not exist
+    static class DoctorNotFoundException extends Exception {
+
+        public DoctorNotFoundException(String message) {
+            super(message);
+        }
+    }
+
+
+    // Exception when appointment slot is already booked
+    static class SlotAlreadyBookedException extends Exception {
+
+        public SlotAlreadyBookedException(String message) {
+            super(message);
+        }
+    }
+
+
+    // Exception when appointment does not exist
+    static class AppointmentNotFoundException extends Exception {
+
+        public AppointmentNotFoundException(String message) {
+            super(message);
+        }
+    }
+
+
+    // Hash Maps.
+
+    // Stores all patients data
+    static Map<Integer, Patient> patients = new HashMap<>();
+
+    // Stores all doctors data
+    static Map<Integer, Doctor> doctors = new HashMap<>();
+
+    // Stores all appointments 
+    static Map<String, Appointment> appointments = new HashMap<>();
+
+
+    // Scanner is used to get input from the user
+    static Scanner scanner = new Scanner(System.in);
+
+
+    // ============================================================
+    // REGISTER PATIENT
+    // ============================================================
+
+    public static void registerPatient() {       // new patient register...
+
+        try {
+            System.out.print("Enter Patient ID: ");
+            int id = scanner.nextInt();
+            scanner.nextLine();
+
+            if (patients.containsKey(id)) {
+
+                System.out.println("Patient ID already exists.");
+
+                return;
+            }
+
+            System.out.print("Enter Patient Name: ");
+            String name = scanner.nextLine();
+
+            System.out.print("Enter Age: ");
+            int age = scanner.nextInt();
+
+            scanner.nextLine();
+
+            System.out.print("Enter Phone: ");
+            String phone = scanner.nextLine();
+
+            // Create Patient object
+            Patient patient =
+                    new Patient(id, name, age, phone);
+
+            // Store patient in HashMap
+            patients.put(id, patient);
+            System.out.println("Patient registered successfully.");
+
+        } catch (InputMismatchException e) {
+        		System.out.println("Invalid input.");
+            scanner.nextLine();
+        }
+    }
+
+
+    // Method to add a new doctor
+    public static void addDoctor() {
+
+        try {
+        		System.out.print("Enter Doctor ID: ");
+            int id = scanner.nextInt();
+            scanner.nextLine();
+
+            if (doctors.containsKey(id)) {
+
+                System.out.println("Doctor ID already exists.");
+
+                return;
+            }
+
+            System.out.print("Enter Doctor Name: ");
+            String name = scanner.nextLine();
+
+            System.out.print("Enter Specialization: ");
+            String specialization = scanner.nextLine();
+
+            Doctor doctor =
+                    new Doctor(id, name, specialization);
+
+            doctors.put(id, doctor);
+
+            System.out.println("Doctor added successfully.");
+
+        } catch (InputMismatchException e) {
+
+            System.out.println("Invalid input.");
+            scanner.nextLine();
+        }
+    }
+
+
+    // Method to book an appointment
+    public static void bookAppointment() {
+
+        try {
+
+            System.out.print("Enter Patient ID: ");
+            int patientId = scanner.nextInt();
+
+            if (!patients.containsKey(patientId)) {
+
+                throw new PatientNotFoundException(
+                        "Patient not found."
+                );
+            }
+
+
+            System.out.print("Enter Doctor ID: ");
+            int doctorId = scanner.nextInt();
+
+            if (!doctors.containsKey(doctorId)) {
+
+                throw new DoctorNotFoundException(
+                        "Doctor not found."
+                );
+            }
+            scanner.nextLine();
+
+            System.out.print("Enter Date (yyyy-MM-dd): ");
+            LocalDate date =LocalDate.parse(scanner.nextLine());    // convert string to date format.
+
+
+            System.out.print("Enter Time (HH:mm): ");
+
+            // Convert String to LocalTime
+            LocalTime time = LocalTime.parse(scanner.nextLine());
+
+
+            String slotKey =
+                    doctorId + "_" + date + "_" + time;  // creating  a new slot..
+
+
+            // Check all existing appointments
+            for (Appointment appointment :
+                    appointments.values()) {
+
+                // Create slot key for existing appointment
+                String existingSlot =
+                        appointment.getDoctorId() + "_" +
+                        appointment.getDate() + "_" +
+                        appointment.getTime();
+
+
+                // Check if same doctor, date and time is already booked
+                if (existingSlot.equals(slotKey)
+                        && appointment.getStatus().equals("BOOKED")) {
+
+                    // Throw exception if slot is already booked
+                    throw new SlotAlreadyBookedException(
+                            "This time slot is already booked."
+                    );
+                }
+            }
+
+
+            String appointmentId = "A" + (appointments.size() + 1);
+              
+            // Create Appointment object
+            Appointment appointment =
+                    new Appointment(
+                            appointmentId,
+                            patientId,
+                            doctorId,
+                            date,
+                            time
+                    );
+
+            appointments.put(appointmentId, appointment);
+            System.out.println( "Appointment booked successfully." );
+            System.out.println(appointment);
+
+
+        } catch (PatientNotFoundException |        // custom exception
+                 DoctorNotFoundException |
+                 SlotAlreadyBookedException e) {
+            System.out.println(e.getMessage());
+
+        } catch (Exception e) {     // date and time exception.
+            System.out.println(
+                    "Invalid date/time or input."
+            );
+        }
+    }
+
+
+    public static void cancelAppointment() {
+
+        try {
+            scanner.nextLine();
+            System.out.print("Enter Appointment ID: ");
+            String id = scanner.nextLine();
+            Appointment appointment =
+                    appointments.get(id);
+
+            if (appointment == null) {
+                throw new AppointmentNotFoundException("Appointment not found." );
+            }
+
+            if (appointment.getStatus().equals("CANCELLED")) {
+
+                System.out.println(
+                        "Appointment already cancelled."
+                );
+
+                return;
+            }
+
+            appointment.cancel();
+            System.out.println("Appointment cancelled successfully"  );
+
+
+        } catch (AppointmentNotFoundException e) {
+            System.out.println(e.getMessage());
+        }
+    }
+
+    public static void viewAvailableSlots() {
+
+        try {
+            System.out.print("Enter Doctor ID: ");
+            int doctorId = scanner.nextInt();
+            if (!doctors.containsKey(doctorId)) {
+            				throw new DoctorNotFoundException("Doctor not found");
+            }
+
+            scanner.nextLine();
+
+            System.out.print("Enter Date (yyyy-MM-dd): ");
+            LocalDate date =LocalDate.parse(scanner.nextLine());   // get date.
+
+            LocalTime startTime = LocalTime.of(9, 0);
+
+            LocalTime endTime =LocalTime.of(18, 0);
+
+
+            System.out.println("\nAvailable Slots:");
+
+            // Used to check whether at least one slot exists
+            boolean found = false;
+            while (!startTime.isAfter(endTime)) {
+
+                // Initially assume slot is available
+                boolean booked = false;
+
+                for (Appointment appointment :
+                        appointments.values()) {
+
+                    // Check doctor, date, time and booking status
+                    if (appointment.getDoctorId() == doctorId
+                            && appointment.getDate().equals(date)
+                            && appointment.getTime().equals(startTime)
+                            && appointment.getStatus().equals("BOOKED")) {
+
+                        // Slot is already booked
+                        booked = true;
+
+                        break;
+                    }
+                }
+
+                if (!booked) {
+
+                    System.out.println(startTime);
+
+                    found = true;
+                }
+
+
+                // Move to the next 30-minute slot
+                startTime =
+                        startTime.plusMinutes(30);
+            }
+
+
+            // If no slot is available
+            if (!found) {
+
+                System.out.println("No available slots.");
+            }
+
+
+        } catch (DoctorNotFoundException e) {
+            System.out.println(e.getMessage());
+
+        } catch (Exception e) {
+            System.out.println("Invalid input.");   //invalid date and time
+        }
+    }
+
+
+    
+    public static void viewDoctorSchedule() {
+
+        try {
+            System.out.print("Enter Doctor ID: ");
+            int doctorId = scanner.nextInt();
+
+            if (!doctors.containsKey(doctorId)) {
+
+                throw new DoctorNotFoundException(
+                        "Doctor not found."
+                );
+            }
+
+
+            System.out.println("\nDoctor Schedule:");
+
+            boolean found = false;
+
+            for (Appointment appointment :      //loop to check all appointments
+                    appointments.values()) {
+
+              
+                if (appointment.getDoctorId() == doctorId
+                        && appointment.getStatus().equals("BOOKED")) {
+
+                    // Display appointment
+                    System.out.println(appointment);
+
+                    found = true;
+                }
+            }
+
+            if (!found) {
+
+                System.out.println("No appointments scheduled.");
+            }
+
+
+        } catch (DoctorNotFoundException e) {
+            System.out.println(e.getMessage());
+
+        } catch (Exception e) {
+            System.out.println("Invalid input.");
+        }
+    }
+
+    public static void viewPatientHistory() {
+
+        try {
+            System.out.print("Enter Patient ID: ");
+            int patientId = scanner.nextInt();
+            if (!patients.containsKey(patientId)) {
+
+                throw new PatientNotFoundException("Patient not found.");
+            }
+
+
+            System.out.println("\nPatient Appointment History:");
+            boolean found = false;
+
+
+            // Loop through all appointments
+            for (Appointment appointment :
+                    appointments.values()) {
+                if (appointment.getPatientId() == patientId) {
+                    System.out.println(appointment);
+
+                    found = true;
+                }
+            }
+
+
+            if (!found) {
+
+                System.out.println("No appointment history.");
+            }
+
+
+        } catch (PatientNotFoundException e) {
+            System.out.println(e.getMessage());
+
+        } catch (Exception e) {
+            System.out.println("Invalid input.");
+        }
+    }
+
+
+    // ============================================================
+    // MAIN METHOD
+    // ============================================================
+
+    // Program execution starts here
+    public static void main(String[] args) {
+        while (true) {
+            System.out.println("\n================================");
+            System.out.println(" HOSPITAL APPOINTMENT SYSTEM");
+            System.out.println("================================");
+
+            System.out.println("1. Register Patient");
+            System.out.println("2. Add Doctor");
+            System.out.println("3. Book Appointment");
+            System.out.println("4. Cancel Appointment");
+            System.out.println("5. View Available Slots");
+            System.out.println("6. View Doctor Schedule");
+            System.out.println("7. View Patient History");
+            System.out.println("8. Exit");
+
+            System.out.println("================================");
+
+
+            try {
+                System.out.print("Enter choice: ");
+                int choice = scanner.nextInt();
+                switch (choice) {
+                    case 1:
+                        registerPatient();
+                        break;
+                    case 2:
+                        addDoctor();
+                        break;
+                    case 3:
+                        bookAppointment();
+                        break;
+                    case 4:
+                        cancelAppointment();
+                        break;
+                    case 5:
+                        viewAvailableSlots();
+                        break;
+                    case 6:
+                        viewDoctorSchedule();
+                        break;
+                    case 7:
+                        viewPatientHistory();
+                        break;
+                    case 8:
+                        System.out.println("Thank you!!!!!!!!!!");
+                        return;
+                    default:
+                        System.out.println(
+                                "Invalid choice."
+                        );
+                }
+
+
+            } catch (InputMismatchException e) {
+                System.out.println(
+                        "Please enter a valid number."
+                );
+                scanner.nextLine();
+            }
+        }
+    }
+}
